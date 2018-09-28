@@ -26,33 +26,41 @@ SOFTWARE.
 import RPi.GPIO as GPIO
 import time
 
-## TO BE REWRITTEN TO WORK WITH NEW ARDUINO SYSTEM
-#min 2.5 max 11.5
-SERVO_OPEN = 8
-SERVO_CLOSE = 11.1
+SERVO_TRANSMISSION_CLOCK_PIN =	20
+SERVO_TRANSMISSION_PIN =		21
+SERVO_TRANSMISSION_DELAY =		0.005 # 5ms
+SERVO_TRANSMISSION_SIZE =		16 
 
-SERVO_COMMUNICATION_PINS = [16, 20, 21]
-
-filters = []
+current_servo_states = []
 
 def init():
-	global filters
+	global current_servo_states
 	
-	GPIO.setmode(GPIO.BCM)
-	for i in range(0, len(SERVO_COMMUNICATION_PINS)):
-		GPIO.setup(SERVO_COMMUNICATION_PINS[i], GPIO.OUT)
-		GPIO.output(SERVO_COMMUNICATION_PINS[i], False)
-		
-def setServoOutput(filter_id):
-	if (filter_id < 0 or filter_id > 7):
-		filter_id = 0
-		
-	GPIO.output(SERVO_COMMUNICATION_PINS[0], (filter_id & 1))
-	GPIO.output(SERVO_COMMUNICATION_PINS[1], (filter_id & 2))
-	GPIO.output(SERVO_COMMUNICATION_PINS[2], (filter_id & 4))
-		
-def open(filter_id):
-	setServoOutput(filter_id)
-
-def close():
-	setServoOutput(0)
+	#Init input/output
+	GPIO.setup(SERVO_TRANSMISSION_CLOCK_PIN, GPIO.OUT)
+	GPIO.setup(SERVO_TRANSMISSION_PIN, GPIO.OUT)
+	GPIO.output(SERVO_TRANSMISSION_CLOCK_PIN, False)
+	GPIO.output(SERVO_TRANSMISSION_PIN, False)
+	#Init servo states
+	for i in range(0, SERVO_TRANSMISSION_SIZE):
+		current_servo_states[i] = False
+	
+def setServos(servo_list)
+	global current_servo_states
+	
+	for index, state in servo_list.items():
+		if index > 0 and index < SERVO_TRANSMISSION_SIZE:
+			current_servo_states[index] = True if state <= 0 else False
+			
+def sendServoStates()
+	for i in range(0, SERVO_TRANSMISSION_SIZE):
+		#1) Write current bit to transmission pin
+		GPIO.output(SERVO_TRANSMISSION_PIN, current_servo_states[i])
+		#2) Rise pin to tell receiver that it need to read
+		GPIO.output(SERVO_TRANSMISSION_CLOCK_PIN, True)
+		#3) Wait a little for receiver to read
+		time.sleep(SERVO_TRANSMISSION_DELAY)
+		#4) Drop pin, end of transmission for this bit
+		GPIO.output(SERVO_TRANSMISSION_CLOCK_PIN, False)
+		time.sleep(0.001)
+	GPIO.output(SERVO_TRANSMISSION_PIN, False)
