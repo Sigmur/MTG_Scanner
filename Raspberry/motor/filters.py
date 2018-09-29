@@ -43,16 +43,16 @@ def init():
 	GPIO.output(SERVO_TRANSMISSION_PIN, False)
 	#Init servo states
 	for i in range(0, SERVO_TRANSMISSION_SIZE):
-		current_servo_states[i] = False
+		current_servo_states.append(False)
 	
-def setServos(servo_list)
+def setServos(servo_list):
 	global current_servo_states
 	
 	for index, state in servo_list.items():
 		if index > 0 and index < SERVO_TRANSMISSION_SIZE:
 			current_servo_states[index] = True if state <= 0 else False
 			
-def sendServoStates()
+def sendServoStates():
 	for i in range(0, SERVO_TRANSMISSION_SIZE):
 		#1) Write current bit to transmission pin
 		GPIO.output(SERVO_TRANSMISSION_PIN, current_servo_states[i])
