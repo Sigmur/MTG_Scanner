@@ -77,12 +77,10 @@ def process(file_name, threshold=150):
 
 	#7) Resize & rotate result
 	result_image = cv2.resize(result_image, (int(width * 0.6), int(height * 0.6))) 
-	rows, cols = result_image.shape
-	M = cv2.getRotationMatrix2D((cols/2,rows/2),-6,1)
-	result_image = cv2.warpAffine(result_image,M,(cols,rows))
 
 	#8) Reverse result color
 	result_image = cv2.bitwise_not(result_image)
+	result_image = rotate(result_image, -6)
 	
 	#9) Write temp tesseract input file
 	result_name = os.getcwd() + '/out/card' + str(index) +'_out.jpg'
@@ -92,3 +90,25 @@ def process(file_name, threshold=150):
 
 	#cv2.imshow('result', result_image)
 	#cv2.waitKey()
+
+def rotate(image, angle):
+	rows, cols, channels = image.shape
+	M = cv2.getRotationMatrix2D((cols / 2, rows / 2), angle, 1)
+	return cv2.warpAffine(image, M, (cols, rows))
+	
+def detectAngle(image):
+	img_before = image.copy()
+	img_gray = cv2.cvtColor(img_before, cv2.COLOR_BGR2GRAY)
+	img_edges = cv2.Canny(img_gray, 100, 100, apertureSize=3)
+	lines = cv2.HoughLinesP(img_edges, 1, math.pi / 180.0, 100, minLineLength=100, maxLineGap=5)
+	
+	if lines is None or len(lines) == 0:
+		return 0
+
+	angles = []
+	for x1, y1, x2, y2 in lines[0]:
+		cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
+		angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+		angles.append(angle)
+
+	return np.median(angles)

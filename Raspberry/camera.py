@@ -36,14 +36,6 @@ update_diff = 0
 
 def init():
 	global camera
-	
-	#pygame.init()
-	#pygame.camera.init()
-	#cam_list = pygame.camera.list_cameras()
-	#if len(cam_list) < 1:
-	#	raise ValueError('No camera detected !')
-	#camera = pygame.camera.Camera(cam_list[0],(CAMERA_W,CAMERA_H), "RGB")
-	#camera.start()
 	camera = cv2.VideoCapture(0)
 	if (camera.isOpened() == False): 
 		raise Exception('Could not init camera')
@@ -51,8 +43,9 @@ def init():
 	camera.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_W)
 	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_H)
 	camera.set(cv2.CAP_PROP_FPS, 20)
-	camera.set(cv2.CAP_PROP_GAIN, 0)
 
+	''' Possible camera parameters
+	
 	test = camera.get(cv2.CAP_PROP_POS_MSEC)
 	ratio = camera.get(cv2.CAP_PROP_POS_AVI_RATIO)
 	frame_rate = camera.get(cv2.CAP_PROP_FPS)
@@ -75,12 +68,17 @@ def init():
 	print("Hue: ", hue)
 	print("Gain: ", gain)
 	print("Exposure: ", exposure)
+	'''
 	
 def cleanup():
 	global camera
 	
 	cv2.destroyAllWindows() 
 	camera.release()
+	
+def displayImage(image, window_title='Camera output'):
+	cv2.imshow(window_title, image)
+	image = cv2.waitKey(1) & 0xFF
 	
 def updateImage(show=False):
 	global update_diff
@@ -91,8 +89,7 @@ def updateImage(show=False):
 		return None
 		
 	if show:
-		cv2.imshow('image', image)
-		image = cv2.waitKey(1) & 0xFF
+		displayImage(image)
 	
 	return image
 
@@ -104,7 +101,7 @@ def autoUpdate(show=False):
 	diff = int(now - begin_time)
 	begin_time = now
 	
-	if (update_diff >= 60):
+	if (update_diff >= 25):
 		updateImage(show)
 		update_diff = 0
 	else:

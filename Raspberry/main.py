@@ -35,6 +35,7 @@ import RPi.GPIO as GPIO
 import json
 import io
 import os
+import pygame
 import timing
 #Driver for main stepper motor
 from motor import stepper
@@ -128,6 +129,7 @@ if len(sys.argv) > 1:
 		print('Entering filters test mode')
 		program = PROGRAM_FILTERS
 	elif sys.argv[1] == 'calibrate':
+		camera.updateImage(False)
 		print('Entering calibration mode')
 		program = PROGRAM_CALIBRATION
 		current_state = STATE_CALIBRATE_SENSOR_ON
@@ -222,9 +224,11 @@ def test_filters():
 		print('Toggle filter ', i)
 		filters.open(i)
 		time.sleep(2)
-	
+
 def calibration():
 	global current_state
+	global processed_count
+	global log
 	
 	if current_state == STATE_CALIBRATE_SENSOR_ON:
 		ok = '\033[92m' + 'DETECT LIGHT' + '\033[0m'
@@ -257,7 +261,6 @@ def calibration():
 				choice = input("> ")
 				if choice == 'y':
 					print('Sensor off clibration is ok')
-					camera.initOuput()
 					current_state = STATE_CALIBRATE_CAMERA
 					break
 				elif choice == 'n':
@@ -266,30 +269,53 @@ def calibration():
 					print('Resume')
 					break
 	elif current_state == STATE_CALIBRATE_CAMERA:
-		print('Manually calibrate camera focus. type \'y\' to go to next step, type \'n\' to roll another card')
+		print('Manually calibrate camera focus', current_state)
+		print("Press CTRL-C to this mode, manually remove a card to roll a new one")
+		try:
+			while True:
+				camera.autoUpdate(True)
+				while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
+					stepper.turn(6)
+		except KeyboardInterrupt:
+			current_state = STATE_CALIBRATE_ANGLE
+			print("\nCamera calibration is ok, check angle")
+			pass
+	elif current_state == STATE_CALIBRATE_ANGLE:
+		camera.autoUpdate()
+		#1) Roll card if needed
+		while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
+			stepper.turn(6)
+		#2) Display angled image
+		for i in range(0, 25):
+			camera.autoUpdate()
+			time.sleep(0.1)
+		image = camera.updateImage()
+		angle = image_processing.detectAngle(image)
+		image = image_processing.rotate(image, angle)
+		camera.displayImage(image)
+		print('Detected angle of', angle, ' enter \'y\' if image is displayed correctly and \'n\' if not')
 		while True:
-			camera.updateOutput()
-			time.sleep(0.01)
 			choice = input("> ")
 			if choice == 'y':
-				print('Camera calibration is ok')
-				current_state = STATE_CALIBRATE_ANGLE
-				break
+				log.append(angle)
+				processed_count += 1
+				if processed_count >= 3:
+					with io.open('angle.json', 'w', encoding='utf8') as outfile:
+						str_ = json.dumps({"angle": (sum(log) / len(log))}, indent=4, separators=(',', ': '), ensure_ascii=False)
+						outfile.write(str(str_))
+					print('Calibration is over !')
+					sys.exit(0)
+					return True
+				else:
+					print(processed_count, '/ 3', 'Angle added to pile, go to next card')
+					while photo_resistor.isActive():
+						stepper.turn(6)
+					break
 			elif choice == 'n':
-				for i in range(0, 5):
-					stepper.step()
-					time.sleep(0.05)
-				print('Removing current card ...')
+				print('Try with another card')
 				while photo_resistor.isActive():
-					stepper.turn(4)
-				time.sleep(0.3)
-				print('Roll a new card card ...')
-				while photo_resistor.isActive() == False:
 					stepper.turn(6)
-					time.sleep(0.01)
 				break
-	elif current_state == STATE_CALIBRATE_ANGLE:
-		print('B')
 	else:
 		return True
 
@@ -312,6 +338,7 @@ except KeyboardInterrupt:
 	print("\n Keyboard stopping")
 
 finally:
-	saveLog()
+	if program == PROGRAM_SCANNER:
+		saveLog()
 	GPIO.cleanup()
 	camera.cleanup()
