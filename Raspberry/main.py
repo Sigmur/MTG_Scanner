@@ -123,18 +123,17 @@ program = PROGRAM_SCANNER
 if len(sys.argv) > 1:
 	if sys.argv[1] == 'camera':
 		print('Entering camera focus mode')
+		camera.camera_handler.toggleShowOutput(True)
 		program = PROGRAM_CAMERA
-		#camera.initOuput()
 	elif sys.argv[1] == 'filters':
 		print('Entering filters test mode')
 		program = PROGRAM_FILTERS
 	elif sys.argv[1] == 'calibrate':
-		camera.updateImage(False)
 		print('Entering calibration mode')
 		program = PROGRAM_CALIBRATION
 		current_state = STATE_CALIBRATE_SENSOR_ON
 else:
-	camera.initOuput()
+	camera_handler.toggleShowOutput(True)
 		
 def saveLog():
 	if os.path.exists('./log') == False:
@@ -165,8 +164,9 @@ def scanner():
 			return
 		#1) Take a picture
 		#debug path '/home/pi/projets/MTGScanner/card' + str(processed_count) + '.jpg'
-		camera.updateOutput()
-		captured = camera.capture('/home/pi/projets/MTGScanner/out/card' + str(processed_count) + '.jpg')
+		#captured = camera.capture('/home/pi/projets/MTGScanner/out/card' + str(processed_count) + '.jpg')
+		#TODO - REWORK WITH NEW SYSTEMS
+		captured = None
 		#2) Pre-process image for Tesseract
 		processed_path = image_processing.process(captured)
 		#3) Pass image threw Tesseract
@@ -206,14 +206,11 @@ def scanner():
 def camera_focus():
 	global current_state
 	
-	camera.updateImage(True)
-	
 	if current_state == STATE_ROLL:
 		stepper.turn(10)
 		if photo_resistor.isActive() == True:
 			current_state = STATE_IMAGE_PROCESSING
 	elif current_state == STATE_IMAGE_PROCESSING:
-		camera.updateOutput()
 		if photo_resistor.isActive() != True:
 			current_state = STATE_ROLL
 
@@ -273,7 +270,6 @@ def calibration():
 		print("Press CTRL-C to this mode, manually remove a card to roll a new one")
 		try:
 			while True:
-				camera.autoUpdate(True)
 				while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
 					stepper.turn(6)
 		except KeyboardInterrupt:
@@ -281,18 +277,16 @@ def calibration():
 			print("\nCamera calibration is ok, check angle")
 			pass
 	elif current_state == STATE_CALIBRATE_ANGLE:
-		camera.autoUpdate()
 		#1) Roll card if needed
 		while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
 			stepper.turn(6)
 		#2) Display angled image
 		for i in range(0, 25):
-			camera.autoUpdate()
 			time.sleep(0.1)
-		image = camera.updateImage()
+		image = camera_handler.read()
 		angle = image_processing.detectAngle(image)
 		image = image_processing.rotate(image, angle)
-		camera.displayImage(image)
+		camera_handler.displayImage(image)
 		print('Detected angle of', angle, ' enter \'y\' if image is displayed correctly and \'n\' if not')
 		while True:
 			choice = input("> ")
@@ -322,10 +316,8 @@ def calibration():
 try:
 	while True:
 		if program == PROGRAM_SCANNER:
-			camera.updateImage()
 			scanner()
 		elif program == PROGRAM_CAMERA:
-			camera.autoUpdate(True)
 			camera_focus()
 		elif program == PROGRAM_FILTERS:
 			test_filters()

@@ -23,87 +23,120 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import sys
-import time
-
+from threading import Thread
 import cv2
+import queue
+import time
 
 CAMERA_W = 1600
 CAMERA_H = 1200
-camera = None
-begin_time = 0
-update_diff = 0
+ 
+class WebcamVideoStream:
+	def __init__(self, src=0):
+		#1) Init stream
+		self.stream = cv2.VideoCapture(src)
+		if (self.stream.isOpened() == False): 
+			raise Exception('Could not init camera')
+		
+		self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_W)
+		self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_H)
+		self.stream.set(cv2.CAP_PROP_FPS, 40)
+
+		''' Possible camera parameters
+		test = camera.get(cv2.CAP_PROP_POS_MSEC)
+		ratio = camera.get(cv2.CAP_PROP_POS_AVI_RATIO)
+		frame_rate = camera.get(cv2.CAP_PROP_FPS)
+		width = camera.get(cv2.CAP_PROP_FRAME_WIDTH)
+		height = camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
+		brightness = camera.get(cv2.CAP_PROP_BRIGHTNESS)
+		contrast = camera.get(cv2.CAP_PROP_CONTRAST)
+		saturation = camera.get(cv2.CAP_PROP_SATURATION)
+		hue = camera.get(cv2.CAP_PROP_HUE)
+		gain = camera.get(cv2.CAP_PROP_GAIN)
+		exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
+		print("Test: ", test)
+		print("Ratio: ", ratio)
+		print("Frame Rate: ", frame_rate)
+		print("Height: ", height)
+		print("Width: ", width)
+		print("Brightness: ", brightness)
+		print("Contrast: ", contrast)
+		print("Saturation: ", saturation)
+		print("Hue: ", hue)
+		print("Gain: ", gain)
+		print("Exposure: ", exposure)
+		'''
+		
+		#2) Init frame queue & get first frame
+		self.show_output = False
+		self.has_new_frame = False
+		self.images = queue.Queue(3)
+		self.updateFrame()
+ 
+		#3) Setup stop
+		self.stopped = False
+		
+	def start(self):
+		# start the thread to read frames from the video stream
+		Thread(target=self.update, args=()).start()
+		return self
+ 
+	def update(self):
+		# keep looping infinitely until the thread is stopped
+		while True:
+			# if the thread indicator variable is set, stop the thread
+			if self.stopped:
+				return
+ 
+			# otherwise, read the next frame from the stream
+			self.updateFrame()
+
+	def updateFrame(self):
+		(self.grabbed, self.last_image) = self.stream.read()
+		if self.images.full():
+			self.images.get_nowait()
+		self.images.put_nowait(self.last_image)
+		self.has_new_frame = True
+		time.sleep(1.0 / 40.0) # 40 fps
+		if self.show_output == True:
+			self.displayImage(self.last_image)
+		
+	def read(self):
+		# return the frame from the queue
+		return self.images.get()
+ 
+	def stop(self):
+		# indicate that the thread should be stopped
+		self.stopped = True
+		cv2.destroyAllWindows()
+		self.stream.release()
+		
+	def toggleShowOutput(self, active=None):
+		if active is None:
+			active = not self.show_output
+		self.show_output = active
+	
+	def displayImage(self, image=None, window_title='Camera output'):
+		if image is None and self.has_new_frame == True:
+			(self.grabbed, self.last_image) = self.stream.read()
+			image = self.last_image
+		if image is None:
+			return
+		cv2.imshow(window_title, image)
+		self.has_new_frame == False
+		image = cv2.waitKey(1) & 0xFF
+
+camera_handler = None
 
 def init():
-	global camera
-	camera = cv2.VideoCapture(0)
-	if (camera.isOpened() == False): 
-		raise Exception('Could not init camera')
+	global camera_handler
 	
-	camera.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_W)
-	camera.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_H)
-	camera.set(cv2.CAP_PROP_FPS, 20)
+	camera_handler = WebcamVideoStream()
+	camera_handler.start()
 
-	''' Possible camera parameters
-	
-	test = camera.get(cv2.CAP_PROP_POS_MSEC)
-	ratio = camera.get(cv2.CAP_PROP_POS_AVI_RATIO)
-	frame_rate = camera.get(cv2.CAP_PROP_FPS)
-	width = camera.get(cv2.CAP_PROP_FRAME_WIDTH)
-	height = camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
-	brightness = camera.get(cv2.CAP_PROP_BRIGHTNESS)
-	contrast = camera.get(cv2.CAP_PROP_CONTRAST)
-	saturation = camera.get(cv2.CAP_PROP_SATURATION)
-	hue = camera.get(cv2.CAP_PROP_HUE)
-	gain = camera.get(cv2.CAP_PROP_GAIN)
-	exposure = camera.get(cv2.CAP_PROP_EXPOSURE)
-	print("Test: ", test)
-	print("Ratio: ", ratio)
-	print("Frame Rate: ", frame_rate)
-	print("Height: ", height)
-	print("Width: ", width)
-	print("Brightness: ", brightness)
-	print("Contrast: ", contrast)
-	print("Saturation: ", saturation)
-	print("Hue: ", hue)
-	print("Gain: ", gain)
-	print("Exposure: ", exposure)
-	'''
-	
 def cleanup():
-	global camera
-	
-	cv2.destroyAllWindows() 
-	camera.release()
-	
-def displayImage(image, window_title='Camera output'):
-	cv2.imshow(window_title, image)
-	image = cv2.waitKey(1) & 0xFF
-	
-def updateImage(show=False):
-	global update_diff
-	global begin_time
+	global camera_handler
 
-	ret, image = camera.read()
-	if ret != True: 
-		return None
-		
-	if show:
-		displayImage(image)
-	
-	return image
-
-def autoUpdate(show=False):
-	global begin_time
-	global update_diff
-
-	now = int(time.time() * 100)
-	diff = int(now - begin_time)
-	begin_time = now
-	
-	if (update_diff >= 25):
-		updateImage(show)
-		update_diff = 0
-	else:
-		update_diff += diff
-
+	if camera_handler is None:
+		return
+	camera_handler.stop()
