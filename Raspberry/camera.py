@@ -28,8 +28,11 @@ import cv2
 import queue
 import time
 
-CAMERA_W = 1600
-CAMERA_H = 1200
+CAMERA_W	= 1600
+CAMERA_H	= 1200
+CAMERA_FPS	= 60
+ 
+images = queue.Queue(3)
  
 class WebcamVideoStream:
 	def __init__(self, src=0):
@@ -40,7 +43,7 @@ class WebcamVideoStream:
 		
 		self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_W)
 		self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_H)
-		self.stream.set(cv2.CAP_PROP_FPS, 40)
+		self.stream.set(cv2.CAP_PROP_FPS, CAMERA_FPS)
 
 		''' Possible camera parameters
 		test = camera.get(cv2.CAP_PROP_POS_MSEC)
@@ -70,7 +73,6 @@ class WebcamVideoStream:
 		#2) Init frame queue & get first frame
 		self.show_output = False
 		self.has_new_frame = False
-		self.images = queue.Queue(3)
 		self.updateFrame()
  
 		#3) Setup stop
@@ -92,24 +94,21 @@ class WebcamVideoStream:
 			self.updateFrame()
 
 	def updateFrame(self):
+		global images
+
+		begin = time.time()
 		(self.grabbed, self.last_image) = self.stream.read()
-		if self.images.full():
-			self.images.get_nowait()
-		self.images.put_nowait(self.last_image)
+		if images.full():
+			images.get_nowait()
+		images.put_nowait(self.last_image)
 		self.has_new_frame = True
-		time.sleep(1.0 / 40.0) # 40 fps
 		if self.show_output == True:
 			self.displayImage(self.last_image)
-		
-	def read(self):
-		# return the frame from the queue
-		return self.images.get()
- 
-	def stop(self):
-		# indicate that the thread should be stopped
-		self.stopped = True
-		cv2.destroyAllWindows()
-		self.stream.release()
+
+		sleep_time = (1.0 / CAMERA_FPS) - (time.time() - begin)
+		if (sleep_time < 0):
+			sleep_time = 0
+		time.sleep(sleep_time)
 		
 	def toggleShowOutput(self, active=None):
 		if active is None:
@@ -125,6 +124,12 @@ class WebcamVideoStream:
 		cv2.imshow(window_title, image)
 		self.has_new_frame == False
 		image = cv2.waitKey(1) & 0xFF
+ 
+	def stop(self):
+		# indicate that the thread should be stopped
+		cv2.destroyAllWindows()
+		self.stream.release()
+		self.stopped = True
 
 camera_handler = None
 
@@ -140,3 +145,8 @@ def cleanup():
 	if camera_handler is None:
 		return
 	camera_handler.stop()
+		
+def read():
+	global images
+	
+	return images.get()
