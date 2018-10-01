@@ -29,12 +29,12 @@ Rev 4 will read card title and do more, but that means getting whole card databa
 | mtgsdk  | Will use later, wrapper for easy calls on MTG official API to get card datas  |
 | opencv-contrib-python | OpenCV (cv2) is a huge and powerfull image manipulation library, but it's hard to setup on raspberry. I followed http://www.life2coding.com/install-opencv-3-4-0-python-3-raspberry-pi-3/ and had a few problems but got it working in the end  |
 
-Various required packages for tesseract, opencv, ect ect
-sudo apt-get install libjpeg8-dev
-sudo apt-get install libhdf5-dev
-sudo apt-get install libhdf5-serial-dev
-sudo apt install libqtgui4
-sudo apt-get install tesseract-ocr
+  Various required packages for tesseract, opencv, ect ect
+  - sudo apt-get install libjpeg8-dev
+  - sudo apt-get install libhdf5-dev
+  - sudo apt-get install libhdf5-serial-dev
+  - sudo apt install libqtgui4
+  - sudo apt-get install tesseract-ocr
 
 ## Parts used
 
