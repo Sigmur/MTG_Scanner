@@ -64,3 +64,4 @@ def sendServoStates():
 		GPIO.output(SERVO_TRANSMISSION_CLOCK_PIN, False)
 		time.sleep(0.001)
 	GPIO.output(SERVO_TRANSMISSION_PIN, False)
+	
