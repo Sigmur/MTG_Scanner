@@ -36,12 +36,13 @@ import os
 
 index = 0
 
-def process(file_name, threshold=150):
+def process(img, threshold=150, increment_results=False):
 	global index
 	
-	#1) Open file
-	img = cv2.imread(file_name)
-
+	#1) Check if ok
+	if img is None:
+		return None
+		
 	height, width, channels = img.shape
 	#2) Generate blank file to be filled with found text
 	blank_image = np.zeros((height, width, 3), np.uint8)
@@ -83,7 +84,13 @@ def process(file_name, threshold=150):
 	result_image = rotate(result_image, -6)
 	
 	#9) Write temp tesseract input file
-	result_name = os.getcwd() + '/out/card' + str(index) +'_out.jpg'
+	target_dir = os.getcwd() + '/out'
+	if os.path.exists(target_dir) == False:
+		os.makedirs(target_dir)
+	if increment_results:
+		result_name = target_dir + '/card' + str(index) +'_out.jpg'
+	else:
+		result_name = target_dir + '/card_out.jpg'
 	index += 1
 	cv2.imwrite(result_name, result_image)
 	return result_name
@@ -92,7 +99,16 @@ def process(file_name, threshold=150):
 	#cv2.waitKey()
 
 def rotate(image, angle):
-	rows, cols, channels = image.shape
+	rows = 0
+	cols = 0
+	
+	if len(image.shape) == 2:
+		rows, cols = image.shape
+	elif len(image.shape) == 3:
+		rows, cols, channels = image.shape
+	else:
+		return None
+		
 	M = cv2.getRotationMatrix2D((cols / 2, rows / 2), angle, 1)
 	return cv2.warpAffine(image, M, (cols, rows))
 	

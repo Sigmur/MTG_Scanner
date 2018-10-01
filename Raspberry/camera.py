@@ -32,7 +32,8 @@ CAMERA_W	= 1600
 CAMERA_H	= 1200
 CAMERA_FPS	= 60
  
-images = queue.Queue(3)
+images = queue.PriorityQueue(1)
+to_display = None
  
 class WebcamVideoStream:
 	def __init__(self, src=0):
@@ -72,7 +73,6 @@ class WebcamVideoStream:
 		
 		#2) Init frame queue & get first frame
 		self.show_output = False
-		self.has_new_frame = False
 		self.updateFrame()
  
 		#3) Setup stop
@@ -95,16 +95,17 @@ class WebcamVideoStream:
 
 	def updateFrame(self):
 		global images
+		global to_display
 
 		begin = time.time()
 		(self.grabbed, self.last_image) = self.stream.read()
 		if images.full():
 			images.get_nowait()
-		images.put_nowait(self.last_image)
-		self.has_new_frame = True
+		images.put_nowait((0, self.last_image))
 		if self.show_output == True:
-			self.displayImage(self.last_image)
+			to_display = self.last_image
 
+		self.displayImage()
 		sleep_time = (1.0 / CAMERA_FPS) - (time.time() - begin)
 		if (sleep_time < 0):
 			sleep_time = 0
@@ -115,15 +116,14 @@ class WebcamVideoStream:
 			active = not self.show_output
 		self.show_output = active
 	
-	def displayImage(self, image=None, window_title='Camera output'):
-		if image is None and self.has_new_frame == True:
-			(self.grabbed, self.last_image) = self.stream.read()
-			image = self.last_image
-		if image is None:
+	def displayImage(self, window_title='Camera output'):
+		global to_display
+		
+		if to_display is None:
 			return
-		cv2.imshow(window_title, image)
-		self.has_new_frame == False
-		image = cv2.waitKey(1) & 0xFF
+		cv2.imshow(window_title, to_display)
+		cv2.waitKey(1) & 0xFF
+		to_display = None
  
 	def stop(self):
 		# indicate that the thread should be stopped
@@ -149,4 +149,7 @@ def cleanup():
 def read():
 	global images
 	
-	return images.get()
+	index, image = images.get_nowait()
+	if image is None:
+		return None
+	return image

@@ -37,7 +37,7 @@ import json
 import io
 import os
 import timing
-from programs import *
+
 #Driver for main stepper motor
 #from motor import stepper
 #Sensor to correct position for card reading
@@ -89,24 +89,33 @@ from programs import *
 
 program = None
 
+
 #1) Load program
 if len(sys.argv) > 1:
 	if sys.argv[1] == 'camera':
-		program = ProgramCamera()
+		from programs import camera as program
 	elif sys.argv[1] == 'filters':
-		program = ProgramFilters()
+		from programs import filters as program
 	elif sys.argv[1] == 'calibrate':
-		program = ProgramCalibration()
+		from programs import calibration as program
+	else:
+		from programs import scanner as program
 else:
-	program = ProgramScanner()
+	from programs import scanner as program
+	
+program = program.Handler()
 
 #2) Run program
 try:
 	while True:
-		program.update();
+		state = program.update();
+		if state == True:
+			program.stop()
+			GPIO.cleanup()
+			break;
 
 except KeyboardInterrupt:
-	print("\n Keyboard stopping")
+	print("\n Closing application")
 
 #3) Cleanup before stop
 finally:

@@ -25,8 +25,7 @@ SOFTWARE.
 
 import sys
 sys.path.append('../')
-
-import Program
+from programs import program
 import camera
 import photo_resistor
 from motor import stepper
@@ -34,7 +33,7 @@ from motor import stepper
 #1) Show camera output
 #2) While no card detected, roll a card
 
-class ProgramCamera(Program):
+class Handler(program.Program):
 	def __init__(self):
 		print('Entering camera focus mode')
 
@@ -53,6 +52,7 @@ class ProgramCamera(Program):
 	def update(self):
 		if photo_resistor.isActive() != True: #Sensor not triggered = no card above it
 			stepper.turn(6)
+		return False
 			
 	def stop(self):
 		camera.cleanup()

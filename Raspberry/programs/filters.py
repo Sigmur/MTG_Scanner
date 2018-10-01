@@ -27,13 +27,13 @@ import sys
 sys.path.append('../')
 
 import time
-import Program
+from programs import program
 from motor import filters
 
 #1) Toggle filters one after the other
 FILTER_COUNT = 4
 
-class ProgramFilters(Program):
+class Handler(program.Program):
 	def __init__(self):
 		print('Entering filter test mode')
 
@@ -47,3 +47,4 @@ class ProgramFilters(Program):
 			print('Toggle filter ', i)
 			filters.open(i)
 			time.sleep(2)
+		return False

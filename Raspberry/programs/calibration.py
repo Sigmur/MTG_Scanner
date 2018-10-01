@@ -30,7 +30,7 @@ import time
 import json
 import io
 
-import Program
+from programs import program
 import camera
 import photo_resistor
 import image_processing
@@ -46,11 +46,10 @@ STATE_CALIBRATE_SENSOR_OFF =	2 #Roll a card over the light sensor, stop when tri
 STATE_CALIBRATE_CAMERA =		3 #Roll a card and activate camera to allow user to calibrate focus
 STATE_CALIBRATE_ANGLE =			4 #Take a picture, detect angle, show result image, ask to user if result is ok or not, after ~5 successful tests, save angle
 
-class ProgramCalibration(Program):
+class Handler(program.Program):
 	def __init__(self):
 		print('Entering calibration mode')
 		self.state = STATE_CALIBRATE_SENSOR_ON
-		self.processed_count = 0
 		self.angles = []
 		
 		#1) Init camera
@@ -91,7 +90,7 @@ class ProgramCalibration(Program):
 			if photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
 				stepper.turn(6)
 				print('Wait for a card ...', end='\r')
-				time.sleep(0.01)
+				time.sleep(0.001)
 			else:
 				print('Detected a card, is the calibration ok ? type y/n and press enter', end='\n')
 				while True:
@@ -107,8 +106,8 @@ class ProgramCalibration(Program):
 						break
 		elif self.state == STATE_CALIBRATE_CAMERA:
 			#3) Calibrate camera focus, roll a card if removed
-			print('Manually calibrate camera focus', self.state)
-			print("Press CTRL-C to this mode, manually remove a card to roll a new one")
+			print('Manually calibrate camera focus')
+			print("Press CTRL-C to exit this mode, manually remove a card to roll a new one")
 			try:
 				while True:
 					while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
@@ -117,35 +116,37 @@ class ProgramCalibration(Program):
 			except KeyboardInterrupt:
 				self.state = STATE_CALIBRATE_ANGLE
 				print("\nCamera calibration is ok, check angle")
+				camera.camera_handler.toggleShowOutput(False)
 				pass
 		elif self.state == STATE_CALIBRATE_ANGLE:
 			#4) Calibrate angle, test a card ,ask if angle is ok, roll another card. If ok 3 times in a row, save angle.
-			#1) Roll card if needed
+			#4.1) Roll card if needed
 			while photo_resistor.isActive() != True: #While there is nothing over it ,roll a card
 				stepper.turn(6)
 				time.sleep(0.01)
-			#2) Display angled image
+			#4.2) Display angled image
 			for i in range(0, 25):
 				time.sleep(0.1)
-			image = camera_handler.read()
+			image = camera.read().copy()
+			if image is None:
+				return
+			print('Detect angle ...')
 			angle = image_processing.detectAngle(image)
 			image = image_processing.rotate(image, angle)
-			camera_handler.displayImage(image)
+			camera.to_display = image
 			print('Detected angle of', angle, ' enter \'y\' if image is displayed correctly and \'n\' if not')
 			while True:
 				choice = input("> ")
 				if choice == 'y':
-					log.append(angle)
-					processed_count += 1
-					if processed_count >= 3:
+					self.angles.append(angle)
+					if len(self.angles) >= 3:
 						with io.open('angle.json', 'w', encoding='utf8') as outfile:
-							str_ = json.dumps({"angle": (sum(log) / len(log))}, indent=4, separators=(',', ': '), ensure_ascii=False)
+							str_ = json.dumps({"angle": (sum(self.angles) / len(self.angles))}, indent=4, separators=(',', ': '), ensure_ascii=False)
 							outfile.write(str(str_))
 						print('Calibration is over !')
-						sys.exit(0)
 						return True
 					else:
-						print(processed_count, '/ 3', 'Angle added to pile, go to next card')
+						print(len(self.angles), '/ 3', 'Angle added to pile, go to next card')
 						while photo_resistor.isActive():
 							stepper.turn(6)
 						break
@@ -155,7 +156,7 @@ class ProgramCalibration(Program):
 						stepper.turn(6)
 					break
 		else:
-			return True
+			return False
 			
 	def stop(self):
 		camera.cleanup()

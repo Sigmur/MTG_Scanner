@@ -30,30 +30,40 @@ import time
 import os
 import io
 import json
-import Program
+from programs import program
+import camera
 import image_processing
 import photo_resistor
 import ocr_processing
+import mtg.parsing
 from motor import stepper
 from motor import filters
 
 #State 1) Roll a card, wait for photo sensor to trigger
 #State 2) take a picture, do stuff with it
 #State 3) Move filter into position
-#State 4) Roll gently to drop a card, wait for second sensor to trigger
+#State 4) Roll gently to drop a card
 STATE_ROLL = 1
 STATE_IMAGE_PROCESSING = 2
 STATE_FILTER = 3
 STATE_DROP = 4
 
 #TODO - Rework image capture using new camera thread system
-#TODO - Write/read config file for filters & use it to handle filters
+#TODO - Write/read config file for filters & rotation angle
 #TODO - Improve card drop ugly code
 
-class ProgramScanner(Program):
+class Handler(program.Program):
 	def __init__(self):
-		print('Entering filter test mode')
-
+		print('Scanner engaged')
+		#1) Init camera
+		camera.init()
+		camera.camera_handler.toggleShowOutput(True)
+		#2) Init stepper
+		stepper.init()
+		stepper.setDirection(-1) #Counter clockwise
+		#3) Init sensor
+		photo_resistor.init()
+		#4) Init filters
 		filters.init()
 		
 		#Init vars
@@ -77,20 +87,21 @@ class ProgramScanner(Program):
 				print('------------------------')
 		elif self.current_state == STATE_IMAGE_PROCESSING:
 			#State 2) take a picture, do stuff with it
-			if (time.time() < self.camera_update_timer): #Wait for card to stop moving & camera to be correctly init
-				time.sleep(0.1)
-				return
+			time.sleep(1.2)
 			#1) Take a picture
-			#debug path '/home/pi/projets/MTGScanner/card' + str(processed_count) + '.jpg'
-			#captured = camera.capture('/home/pi/projets/MTGScanner/out/card' + str(processed_count) + '.jpg')
-			#TODO - REWORK WITH NEW SYSTEMS
-			captured = None
+			camera.camera_handler.toggleShowOutput(False)
+			captured = camera.read().copy()
+			if captured is None:
+				return
 			#2) Pre-process image for Tesseract
+			camera.to_display = captured.copy()
 			processed_path = image_processing.process(captured)
+			if processed_path is None:
+				return
 			#3) Pass image threw Tesseract
 			ocr_string = ocr_processing.processImage(processed_path)
 			#4) Parse result string
-			card_data = mtg_parsing.parse(ocr_string)
+			card_data = mtg.parsing.parse(ocr_string)
 			self.last_processed_data = card_data
 			print(card_data, ocr_string)
 			self.log.append(card_data)
@@ -99,16 +110,16 @@ class ProgramScanner(Program):
 		elif self.current_state == STATE_FILTER:
 			#State 3) Move filter into position
 			#TODO - Cleanup this
-			if (self.last_processed_data['extention'] == 'AKH'):
-				filters.open(1)
-			elif (self.last_processed_data['extention'] == 'BFZ'):
-				filters.open(2)
-			elif (self.last_processed_data['extention'] == 'KLD'):
-				filters.open(3)
-			elif (self.last_processed_data['extention'] == 'ORI'):
-				filters.open(4)
-			else:
-				filters.close()
+			#if (self.last_processed_data['extention'] == 'AKH'):
+			#	filters.open(1)
+			#elif (self.last_processed_data['extention'] == 'BFZ'):
+			#	filters.open(2)
+			#elif (self.last_processed_data['extention'] == 'KLD'):
+			#	filters.open(3)
+			#elif (self.last_processed_data['extention'] == 'ORI'):
+			#	filters.open(4)
+			#else:
+			#	filters.close()
 			self.current_state = STATE_DROP
 		elif self.current_state == STATE_DROP:
 			#State 4) Roll gently to drop a card, wait for second sensor to trigger
@@ -122,6 +133,7 @@ class ProgramScanner(Program):
 				self.current_state = STATE_ROLL
 			else:
 				stepper.turn(30)
+		return False
 			
 	def stop(self):
 		self.saveLog()
