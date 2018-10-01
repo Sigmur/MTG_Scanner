@@ -25,6 +25,10 @@ SOFTWARE.
 
 #sudo apt-get install libjpeg8-dev
 #sudo apt-get install tesseract-ocr
+#sudo apt-get install libhdf5-dev
+#sudo apt-get update
+#sudo apt-get install libhdf5-serial-dev
+#sudo apt install libqtgui4
 
 import sys
 import time
