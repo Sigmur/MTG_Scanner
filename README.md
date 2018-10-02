@@ -52,7 +52,7 @@ https://github.com/mmarchetti/DirectIO
 | Stepper motor driver board L298N (1) | Required, or no vroom. ~5€/u | ![Alt text](imgs/L298N.jpg?raw=true "L298N Stepper driver board") |
 | Small servomotor SG90 (10+) | Used to move the filters, linked to the arduinos. ~2€/u | ![Alt text](imgs/servo-sg90.jpg?raw=true "Servomotor SG90") |
 | Photo sensor (1) | Used to detect if a card is right under the camera | ![Alt text](imgs/photoresistor.jpg?raw=true "Raspberry") |
-| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. | - |
+| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. | ![Alt text](imgs/camera.jpg?raw=true "USB camera") |
 | Lego (1 fuckton) | I don't have a CNC, but i've gathered the whole family Lego fortune. | - |
 | Weird power supply (1) | I reconverted an old computer power supply, thank to our friendly german Great Scott for that trick. It's probably unsafe but heh. | - |
 
