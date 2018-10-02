@@ -200,12 +200,14 @@ MTG_CARD_TYPES = {
 }
 
 def parse(string):
-	#5) Parse Tesseract string datas
-	#5.1) Card number
+	string = string.upper()
+	string = string.replace('I', '!')
+	#Parse Tesseract string datas
+	#1) Card number
 	number_and_type = getCardNumberAndType(string)
 	number = number_and_type[0]
 	type = number_and_type[1]
-	#5.2) Extention
+	#2) Extention
 	extention_and_lang = getCardExtentionAndLang(string)
 	extention = extention_and_lang[0]
 	lang = extention_and_lang[1]

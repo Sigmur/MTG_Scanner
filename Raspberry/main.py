@@ -110,14 +110,14 @@ try:
 	while True:
 		state = program.update();
 		if state == True:
-			program.stop()
-			GPIO.cleanup()
 			break;
 
 except KeyboardInterrupt:
 	print("\n Closing application")
+	
+finally:
+	pass
 
 #3) Cleanup before stop
-finally:
-	program.stop()
-	GPIO.cleanup()
+program.stop()
+GPIO.cleanup()

@@ -109,7 +109,7 @@ class WebcamVideoStream:
 		sleep_time = (1.0 / CAMERA_FPS) - (time.time() - begin)
 		if (sleep_time < 0):
 			sleep_time = 0
-		time.sleep(sleep_time)
+		#time.sleep(sleep_time)
 		
 	def toggleShowOutput(self, active=None):
 		if active is None:

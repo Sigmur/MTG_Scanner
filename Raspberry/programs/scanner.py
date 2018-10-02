@@ -30,6 +30,7 @@ import time
 import os
 import io
 import json
+import config
 from programs import program
 import camera
 import image_processing
@@ -48,9 +49,7 @@ STATE_IMAGE_PROCESSING = 2
 STATE_FILTER = 3
 STATE_DROP = 4
 
-#TODO - Rework image capture using new camera thread system
-#TODO - Write/read config file for filters & rotation angle
-#TODO - Improve card drop ugly code
+#TODO - Write/read config file for filters
 
 class Handler(program.Program):
 	def __init__(self):
@@ -70,7 +69,6 @@ class Handler(program.Program):
 		self.current_state = STATE_ROLL
 		self.processed_count = 0
 		self.log = []
-		self.camera_update_timer = 0
 		self.last_processed_data = []
 		
 	def getName(self):
@@ -82,12 +80,11 @@ class Handler(program.Program):
 			stepper.turn(6)
 			if photo_resistor.isActive() == True:
 				self.current_state = STATE_IMAGE_PROCESSING
-				self.camera_update_timer = time.time() + 2
 				stepper.stop()
 				print('------------------------')
 		elif self.current_state == STATE_IMAGE_PROCESSING:
 			#State 2) take a picture, do stuff with it
-			time.sleep(1.2)
+			time.sleep(0.9) #We need to wait for the camera to update properly
 			#1) Take a picture
 			camera.camera_handler.toggleShowOutput(False)
 			captured = camera.read().copy()
@@ -123,10 +120,9 @@ class Handler(program.Program):
 			self.current_state = STATE_DROP
 		elif self.current_state == STATE_DROP:
 			#State 4) Roll gently to drop a card, wait for second sensor to trigger
-			#Slight static movment to trigger drop
-			#TODO - CLEANUP THIS
+			#Slight static movEment to trigger drop
 			for i in range(0, 5):
-				stepper.step()
+				stepper.step() #A few stepsis all it takes
 				time.sleep(0.05)
 			if photo_resistor.isActive() == False:
 				time.sleep(0.5)

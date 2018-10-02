@@ -34,6 +34,7 @@ from programs import program
 import camera
 import photo_resistor
 import image_processing
+import config
 from motor import stepper
 
 #1) Calibrate unblocked photo sensor light reception
@@ -140,9 +141,7 @@ class Handler(program.Program):
 				if choice == 'y':
 					self.angles.append(angle)
 					if len(self.angles) >= 3:
-						with io.open('angle.json', 'w', encoding='utf8') as outfile:
-							str_ = json.dumps({"angle": (sum(self.angles) / len(self.angles))}, indent=4, separators=(',', ': '), ensure_ascii=False)
-							outfile.write(str(str_))
+						config.set("angle", (sum(self.angles) / len(self.angles)))
 						print('Calibration is over !')
 						return True
 					else:

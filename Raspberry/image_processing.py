@@ -33,17 +33,23 @@ import numpy as np
 import cv2
 import math
 import os
+import config
 
 index = 0
+angle = None
 
 def process(img, threshold=150, increment_results=False):
 	global index
+	global angle
 	
 	#1) Check if ok
 	if img is None:
 		return None
 		
 	height, width, channels = img.shape
+	if angle is None:
+		angle = config.get('angle', -10.0)
+		
 	#2) Generate blank file to be filled with found text
 	blank_image = np.zeros((height, width, 3), np.uint8)
 	
@@ -81,7 +87,7 @@ def process(img, threshold=150, increment_results=False):
 
 	#8) Reverse result color
 	result_image = cv2.bitwise_not(result_image)
-	result_image = rotate(result_image, -6)
+	result_image = rotate(result_image, angle)
 	
 	#9) Write temp tesseract input file
 	target_dir = os.getcwd() + '/out'
