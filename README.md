@@ -18,9 +18,9 @@ Rev 4 will read card title and do more, but that means getting whole card databa
   We bough 15.000 cards from a guy in a garage sale. After an hour of sorting & referencing ~1000 i got bored. So i spent the next month building something to do it automatically. I am not a smart man.
   Edit : we bought another 20k+ cards. Cards, cards everywhere.
   
-## Python version & requirements
-  Python version used to dev
-  - Python 3.4+
+## Software versions & requirements
+
+### Python 3.4
   
 | Name  | Description |
 | ------------- | ------------- |
@@ -35,20 +35,25 @@ Rev 4 will read card title and do more, but that means getting whole card databa
   - sudo apt-get install libhdf5-serial-dev
   - sudo apt install libqtgui4
   - sudo apt-get install tesseract-ocr
+  
+### Arduino
+
+To speed up input/output :
+https://github.com/mmarchetti/DirectIO
 
 ## Parts used
 
-| Name | Description & usage |
-| ------------- | ------------- |
-| Raspberry 3 B+ (1) | The brain of the operation, ~30€ |
-| Arduino pro mini (~3/4+) | Used to drive the servos. A servo need a PWM signal, this type of arduino has 6 PWM pins, so 6 servos max per arduinos. They can be linked to handle 16/32/64 ... servos. |
-| Dupont wires (a LOT) | Buy a lot of them and watch them spread all around your workbench. |
-| Stepper motor Nema 17 40Ncm (1) | Much torque, such precision (1.8°), very power (1.7A). Wow. Commonly found in cheap ass 3d printers (~10€/u). |
-| Stepper motor driver board L298N (1) | Required, or no vroom. ~5€/u |
-| Small servomotor SG90 (10+) | Used to move the filters, linked to the arduinos. ~2€/u |
-| Photo sensor (1) | Used to detect if a card is right under the camera |
-| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. |
-| Lego (1 fuckton) | I don't have a CNC, but i've gathered the whole family Lego fortune. |
-| Weird power supply (1) | I reconverted an old computer power supply, thank to our friendly german Great Scott for that trick. It's probably unsafe but heh. |
+| Name | Description & usage | Image |
+| ------------- | ------------- | ------------- |
+| Raspberry 3 B+ (1) | The brain of the operation, ~30€ | - |
+| Arduino pro mini (~3/4+) | Used to drive the servos. A servo need a PWM signal, this type of arduino has 6 PWM pins, so 6 servos max per arduinos. They can be linked to handle 16/32/64 ... servos. | ![Alt text](imgs/arduino.jpg?raw=true "Arduino pro mini") |
+| Dupont wires (a LOT) | Buy a lot of them and watch them spread all around your workbench. | - |
+| Stepper motor Nema 17 40Ncm (1) | Much torque, such precision (1.8°), very power (1.7A). Wow. Commonly found in cheap ass 3d printers (~10€/u). | ![Alt text](imgs/NEMA17.jpg?raw=true "Stepper motor NEMA 17") |
+| Stepper motor driver board L298N (1) | Required, or no vroom. ~5€/u | ![Alt text](imgs/L298N.jpg?raw=true "L298N Stepper driver board") |
+| Small servomotor SG90 (10+) | Used to move the filters, linked to the arduinos. ~2€/u | ![Alt text](imgs/servo-sg90.jpg?raw=true "Servomotor SG90") |
+| Photo sensor (1) | Used to detect if a card is right under the camera | - |
+| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. | - |
+| Lego (1 fuckton) | I don't have a CNC, but i've gathered the whole family Lego fortune. | - |
+| Weird power supply (1) | I reconverted an old computer power supply, thank to our friendly german Great Scott for that trick. It's probably unsafe but heh. | - |
 
 Overall cost ~150€
