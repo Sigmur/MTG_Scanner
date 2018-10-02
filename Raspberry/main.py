@@ -94,10 +94,12 @@ program = None
 if len(sys.argv) > 1:
 	if sys.argv[1] == 'camera':
 		from programs import camera as program
-	elif sys.argv[1] == 'filters':
-		from programs import filters as program
 	elif sys.argv[1] == 'calibrate':
 		from programs import calibration as program
+	elif sys.argv[1] == 'filter:setup':
+		from programs import filters_setup as program
+	elif sys.argv[1] == 'filter:list':
+		from programs import filters_list as program
 	else:
 		from programs import scanner as program
 else:

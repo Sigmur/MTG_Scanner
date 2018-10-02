@@ -23,6 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+#This is the filter servo handler
+#It tells the servo driver to open/close target filter
+
 import sys
 sys.path.append('../')
 

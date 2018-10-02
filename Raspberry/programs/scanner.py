@@ -38,7 +38,7 @@ import photo_resistor
 import ocr_processing
 import mtg.parsing
 from motor import stepper
-from motor import filters
+import filters
 
 #State 1) Roll a card, wait for photo sensor to trigger
 #State 2) take a picture, do stuff with it

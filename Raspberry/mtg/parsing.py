@@ -216,11 +216,11 @@ def parse(string):
 	
 def getCardNumberAndType(string):
 	result = re.search(r'(\d{2,}\/\d{2,}).{0,}(C|U|R|M|L|T|S|E)', string)
-	if (result == None):
-		return ['', '']
-		
 	type = ''
 	number = ''
+	
+	if result is None:
+		return (number, type)
 		
 	for i in range(0, len(result.groups()) + 1):
 		text = result.group(i)
@@ -237,7 +237,7 @@ def getCardExtentionAndLang(string):
 	extention = ''
 	lang = ''
 	
-	if (result == None):
+	if result is None:
 		return (extention, lang)
 	
 	for i in range(0, len(result.groups()) + 1):

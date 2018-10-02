@@ -23,13 +23,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+#Our servos have only two states : open and close
+#This file send data to first arduino in the chain to tell it to open/close servos
+#The arduino will then send shifted datas to the next in chain, etc etc
+
 import RPi.GPIO as GPIO
 import time
 
 SERVO_TRANSMISSION_CLOCK_PIN =	20
 SERVO_TRANSMISSION_PIN =		21
 SERVO_TRANSMISSION_DELAY =		0.005 # 5ms
-SERVO_TRANSMISSION_SIZE =		16 
+SERVO_TRANSMISSION_SIZE =		16
 
 current_servo_states = []
 
