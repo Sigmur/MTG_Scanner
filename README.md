@@ -45,14 +45,14 @@ https://github.com/mmarchetti/DirectIO
 
 | Name | Description & usage | Image |
 | ------------- | ------------- | ------------- |
-| Raspberry 3 B+ (1) | The brain of the operation, ~30€ | ![Alt text](imgs/raspberry_pi_3.jpg?raw=true "Raspberry") |
-| Arduino pro mini (~3/4+) | Used to drive the servos. A servo need a PWM signal, this type of arduino has 6 PWM pins, so 6 servos max per arduinos. They can be linked to handle 16/32/64 ... servos. | ![Alt text](imgs/arduino.jpg?raw=true "Arduino pro mini") |
-| Dupont wires (a LOT) | Buy a lot of them and watch them spread all around your workbench. | ![Alt text](imgs/dupont_wires.jpg?raw=true "Dupont wires") |
-| Stepper motor Nema 17 40Ncm (1) | Much torque, such precision (1.8°), very power (1.7A). Wow. Commonly found in cheap ass 3d printers (~10€/u). | ![Alt text](imgs/NEMA17.jpg?raw=true "Stepper motor NEMA 17") |
-| Stepper motor driver board L298N (1) | Required, or no vroom. ~5€/u | ![Alt text](imgs/L298N.jpg?raw=true "L298N Stepper driver board") |
-| Small servomotor SG90 (10+) | Used to move the filters, linked to the arduinos. ~2€/u | ![Alt text](imgs/servo-sg90.jpg?raw=true "Servomotor SG90") |
-| Photo sensor (1) | Used to detect if a card is right under the camera | ![Alt text](imgs/photoresistor.jpg?raw=true "Raspberry") |
-| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. | ![Alt text](imgs/camera.jpg?raw=true "USB camera") |
+| Raspberry 3 B+ (1) | The brain of the operation, ~30€ | ![Alt text](imgs/parts/raspberry_pi_3.jpg?raw=true "Raspberry") |
+| Arduino pro mini (~3/4+) | Used to drive the servos. A servo need a PWM signal, this type of arduino has 6 PWM pins, so 6 servos max per arduinos. They can be linked to handle 16/32/64 ... servos. | ![Alt text](imgs/parts/arduino.jpg?raw=true "Arduino pro mini") |
+| Dupont wires (a LOT) | Buy a lot of them and watch them spread all around your workbench. | ![Alt text](imgs/parts/dupont_wires.jpg?raw=true "Dupont wires") |
+| Stepper motor Nema 17 40Ncm (1) | Much torque, such precision (1.8°), very power (1.7A). Wow. Commonly found in cheap ass 3d printers (~10€/u). | ![Alt text](imgs/parts/NEMA17.jpg?raw=true "Stepper motor NEMA 17") |
+| Stepper motor driver board L298N (1) | Required, or no vroom. ~5€/u | ![Alt text](imgs/parts/L298N.jpg?raw=true "L298N Stepper driver board") |
+| Small servomotor SG90 (10+) | Used to move the filters, linked to the arduinos. ~2€/u | ![Alt text](imgs/parts/servo-sg90.jpg?raw=true "Servomotor SG90") |
+| Photo sensor (1) | Used to detect if a card is right under the camera | ![Alt text](imgs/parts/photoresistor.jpg?raw=true "Raspberry") |
+| USB Camera 'microscope' (1) | Not realy a microscope, ok magnification, manual calibration, with built in lighting. ~30€. | ![Alt text](imgs/parts/camera.jpg?raw=true "USB camera") |
 | Lego (1 fuckton) | I don't have a CNC, but i've gathered the whole family Lego fortune. | - |
 | Weird power supply (1) | I reconverted an old computer power supply, thank to our friendly german Great Scott for that trick. It's probably unsafe but heh. | - |
 
