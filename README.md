@@ -1,6 +1,8 @@
 # MTG_Scanner
 Magic The gathering card scanning & sorting machine
 
+![Current](imgs/V3/V3%201.jpg?raw=true "Current")
+
 Current rev : 3
  - Read cards
  - Open correct filters
